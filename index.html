@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>Weather Dashboard</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body id="body">
+
+    <!-- Navbar -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+
+            <i class="fa-solid fa-cloud-sun"></i>
+
+            <span>Weather Dashboard</span>
+
+        </div>
+
+    </nav>
+
+    <div class="container">
+
+        <!-- Header -->
+
+        <header>
+
+            <h1>
+
+                Live Weather Forecast
+
+            </h1>
+
+            <p>
+
+                Search any city around the world and view real-time weather updates.
+
+            </p>
+
+        </header>
+
+        <!-- Search -->
+
+        <section class="search-section">
+
+            <div class="search-box">
+
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+                <input
+                    type="text"
+                    id="cityInput"
+                    placeholder="Search city (e.g. Kathmandu, London, Tokyo)">
+
+            </div>
+
+            <button onclick="getWeather()">
+
+                <i class="fa-solid fa-location-dot"></i>
+
+                Search
+
+            </button>
+
+        </section>
+
+        <!-- Weather Card -->
+
+        <section class="weather-card">
+
+            <div class="left">
+
+                <img
+                    id="weatherIcon"
+                    src="https://openweathermap.org/img/wn/01d@4x.png"
+                    alt="Weather">
+
+            </div>
+
+            <div class="right">
+
+                <h2 id="cityName">
+
+                    Kathmandu
+
+                </h2>
+
+                <p
+                    id="todayDate"
+                    class="date">
+
+                    Thursday, July 09
+
+                </p>
+
+                <h1 id="temperature">
+
+                    25°C
+
+                </h1>
+
+                <h3 id="condition">
+
+                    Clear Sky
+
+                </h3>
+
+                <div
+                    id="flag"
+                    class="flag">
+
+                    🟢 Excellent
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- Weather Details -->
+
+        <section class="details">
+
+            <div class="detail-card">
+
+                <i class="fa-solid fa-temperature-half"></i>
+
+                <h4>Feels Like</h4>
+
+                <p id="feelsLike">24°C</p>
+
+            </div>
+
+            <div class="detail-card">
+
+                <i class="fa-solid fa-droplet"></i>
+
+                <h4>Humidity</h4>
+
+                <p id="humidity">60%</p>
+
+            </div>
+
+            <div class="detail-card">
+
+                <i class="fa-solid fa-wind"></i>
+
+                <h4>Wind Speed</h4>
+
+                <p id="wind">3 km/h</p>
+
+            </div>
+
+            <div class="detail-card">
+
+                <i class="fa-solid fa-temperature-arrow-down"></i>
+
+                <h4>Min Temp</h4>
+
+                <p id="minTemp">22°C</p>
+
+            </div>
+
+            <div class="detail-card">
+
+                <i class="fa-solid fa-temperature-arrow-up"></i>
+
+                <h4>Max Temp</h4>
+
+                <p id="maxTemp">30°C</p>
+
+            </div>
+
+            <div class="detail-card">
+
+                <i class="fa-solid fa-gauge-high"></i>
+
+                <h4>Pressure</h4>
+
+                <p id="pressure">1012 hPa</p>
+
+            </div>
+
+            <div class="detail-card">
+
+                <i class="fa-solid fa-eye"></i>
+
+                <h4>Visibility</h4>
+
+                <p id="visibility">8 km</p>
+
+            </div>
+
+            <div class="detail-card">
+
+                <i class="fa-solid fa-sun"></i>
+
+                <h4>Sunrise</h4>
+
+                <p id="sunrise">5:18 AM</p>
+
+            </div>
+
+            <div class="detail-card">
+
+                <i class="fa-solid fa-moon"></i>
+
+                <h4>Sunset</h4>
+
+                <p id="sunset">6:52 PM</p>
+
+            </div>
+
+        </section>
+
+        <!-- Forecast -->
+
+        <section class="forecast-section">
+
+            <h2>
+
+                <i class="fa-solid fa-calendar-days"></i>
+
+                5-Day Forecast
+
+            </h2>
+
+            <div
+                id="forecast"
+                class="forecast">
+
+                <!-- JavaScript will generate forecast cards -->
+
+            </div>
+
+        </section>
+
+    </div>
+
+    <!-- Loading -->
+
+    <div
+        id="loader"
+        class="loader hidden">
+
+        <div class="spinner"></div>
+
+        <p>Loading Weather...</p>
+
+    </div>
+
+    <!-- Footer -->
+
+    <footer>
+
+        <p>
+
+            <i class="fa-solid fa-cloud"></i>
+
+            Weather Dashboard | Built with HTML, CSS & JavaScript
+
+        </p>
+
+    </footer>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
