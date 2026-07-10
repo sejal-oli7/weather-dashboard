@@ -1,250 +1,167 @@
-// ==========================================
-// WEATHER DASHBOARD
-// Author: Sejal Oli
-// ==========================================
-
-// =========================
-// API KEY
-// =========================
+// ===========================
+// OpenWeather API Key
+// ===========================
 
 const API_KEY = "da5cc509bc967933cf9f957a7a06eb9b";
 
-
-// =========================
-// ELEMENTS
-// =========================
+// ===========================
+// Elements
+// ===========================
 
 const cityInput = document.getElementById("cityInput");
 const loader = document.getElementById("loader");
 const body = document.getElementById("body");
 
+// ===========================
+// Events
+// ===========================
 
-// =========================
-// ENTER KEY SEARCH
-// =========================
-
-cityInput.addEventListener("keypress", function(e){
-
-    if(e.key === "Enter"){
-
+cityInput.addEventListener("keypress", function (e) {
+    if (e.key === "Enter") {
         getWeather();
-
     }
-
 });
 
-
-// =========================
-// DEFAULT CITY
-// =========================
-
-window.onload = function(){
-
+window.onload = function () {
     getWeather("Kathmandu");
-
 };
 
+// ===========================
+// Get Weather
+// ===========================
 
-// =========================
-// GET WEATHER
-// =========================
-
-async function getWeather(defaultCity=""){
+async function getWeather(defaultCity = "") {
 
     const city = defaultCity || cityInput.value.trim();
 
-    if(city===""){
-
-        alert("Please enter a city name.");
-
+    if (!city) {
+        alert("Please enter a city.");
         return;
-
     }
 
     loader.classList.remove("hidden");
 
-    try{
+    try {
 
-        // Current Weather
-
-        const weatherURL =
-        `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric`;
-
-        const response = await fetch(weatherURL);
+        const response = await fetch(
+            `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric`
+        );
 
         const data = await response.json();
 
-        if(data.cod != 200){
+        console.log(data);
 
-            throw new Error(data.message);
-
+        if (data.cod != 200) {
+            alert(data.message);
+            loader.classList.add("hidden");
+            return;
         }
 
         updateCurrentWeather(data);
 
-        // Forecast
-
         getForecast(city);
 
-    }
+    } catch (err) {
 
-    catch(error){
+        console.error(err);
 
-        alert("❌ " + error.message);
-
-    }
-
-    finally{
-
-        loader.classList.add("hidden");
+        alert("Network Error");
 
     }
+
+    loader.classList.add("hidden");
 
 }
-// =========================
-// UPDATE CURRENT WEATHER
-// =========================
 
-function updateCurrentWeather(data){
+// ===========================
+// Current Weather
+// ===========================
 
-    // City
+function updateCurrentWeather(data) {
 
     document.getElementById("cityName").innerHTML =
         `${data.name}, ${data.sys.country}`;
 
-    // Date
-
-    document.getElementById("todayDate").innerHTML =
-        new Date().toDateString();
-
-    // Temperature
-
     document.getElementById("temperature").innerHTML =
         `${Math.round(data.main.temp)}°C`;
-
-    // Weather Condition
 
     document.getElementById("condition").innerHTML =
         capitalize(data.weather[0].description);
 
-    // Feels Like
-
     document.getElementById("feelsLike").innerHTML =
         `${Math.round(data.main.feels_like)}°C`;
-
-    // Humidity
 
     document.getElementById("humidity").innerHTML =
         `${data.main.humidity}%`;
 
-    // Wind Speed
-
     document.getElementById("wind").innerHTML =
         `${Math.round(data.wind.speed * 3.6)} km/h`;
-
-    // Pressure
 
     document.getElementById("pressure").innerHTML =
         `${data.main.pressure} hPa`;
 
-    // Minimum Temperature
-
     document.getElementById("minTemp").innerHTML =
         `${Math.round(data.main.temp_min)}°C`;
-
-    // Maximum Temperature
 
     document.getElementById("maxTemp").innerHTML =
         `${Math.round(data.main.temp_max)}°C`;
 
-    // Visibility
-
-    document.getElementById("visibility").innerHTML =
-        `${(data.visibility / 1000).toFixed(1)} km`;
-
-    // Sunrise
-
-    document.getElementById("sunrise").innerHTML =
-        formatTime(data.sys.sunrise, data.timezone);
-
-    // Sunset
-
-    document.getElementById("sunset").innerHTML =
-        formatTime(data.sys.sunset, data.timezone);
-
-    // Weather Icon
-
     document.getElementById("weatherIcon").src =
         `https://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png`;
 
-    // Weather Quality Flag
+    document.getElementById("todayDate").innerHTML =
+        new Date().toDateString();
 
     updateFlag(data.main.temp);
 
-    // Background Theme
-
     changeTheme(
-
         data.weather[0].main,
-
         data.wind.speed,
-
         data.weather[0].icon
-
     );
 
 }
-// =========================
-// GET 5-DAY FORECAST
-// =========================
 
-async function getForecast(city){
+// ===========================
+// Forecast
+// ===========================
 
-    try{
+async function getForecast(city) {
 
-        const forecastURL =
-        `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric`;
+    try {
 
-        const response = await fetch(forecastURL);
+        const url =
+            `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${API_KEY}`;
+
+        const response = await fetch(url);
 
         const data = await response.json();
 
-        if(data.cod != "200"){
-
-            throw new Error("Forecast not found");
-
+        if (!response.ok) {
+            return;
         }
 
-        const forecast = document.getElementById("forecast");
+        const forecastDiv = document.getElementById("forecast");
 
-        forecast.innerHTML = "";
-
-        // Get one forecast per day (around 12 PM)
+        forecastDiv.innerHTML = "";
 
         const dailyForecast = data.list.filter(item =>
             item.dt_txt.includes("12:00:00")
         );
 
-        dailyForecast.forEach(day=>{
+        dailyForecast.forEach(day => {
 
-            const date = new Date(day.dt * 1000);
+            const date = new Date(day.dt_txt);
 
-            const dayName = date.toLocaleDateString(
-                "en-US",
-                {
-                    weekday:"short"
-                }
-            );
-
-            const card = `
+            forecastDiv.innerHTML += `
 
             <div class="forecast-card">
 
-                <h3>${dayName}</h3>
+                <h3>${date.toLocaleDateString("en-US", {
+                    weekday: "short"
+                })}</h3>
 
-                <img
-                src="https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png"
-                alt="Weather Icon">
+                <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png">
 
                 <h2>${Math.round(day.main.temp)}°C</h2>
 
@@ -254,218 +171,112 @@ async function getForecast(city){
 
             `;
 
-            forecast.innerHTML += card;
-
         });
 
     }
 
-    catch(error){
+    catch (error) {
 
-        console.error(error);
+        console.log(error);
 
     }
 
 }
 
-// =========================
-// WEATHER STATUS FLAG
-// =========================
+// ===========================
+// Weather Quality
+// ===========================
 
-function updateFlag(temp){
+function updateFlag(temp) {
 
     const flag = document.getElementById("flag");
 
-    const weather =
-        document.getElementById("condition")
-        .innerText
-        .toLowerCase();
-
-    // Thunderstorm
-
-    if(weather.includes("thunder")){
-
-        flag.innerHTML = "⛈️ Storm Alert";
-
-        flag.style.background = "#c0392b";
-
-        return;
-
-    }
-
-    // Rain
-
-    if(weather.includes("rain")){
-
-        flag.innerHTML = "🌧️ Rainy";
-
-        flag.style.background = "#3498db";
-
-        return;
-
-    }
-
-    // Snow
-
-    if(weather.includes("snow")){
-
-        flag.innerHTML = "❄️ Snow";
-
-        flag.style.background = "#5dade2";
-
-        return;
-
-    }
-
-    // Mist / Fog
-
-    if(
-
-        weather.includes("mist") ||
-
-        weather.includes("fog") ||
-
-        weather.includes("haze")
-
-    ){
-
-        flag.innerHTML = "🌫️ Foggy";
-
-        flag.style.background = "#7f8c8d";
-
-        return;
-
-    }
-
-    // Clouds
-
-    if(weather.includes("cloud")){
-
-        flag.innerHTML = "☁️ Cloudy";
-
-        flag.style.background = "#6c757d";
-
-        return;
-
-    }
-
-    // Clear Sky
-
-    if(weather.includes("clear")){
-
-        flag.innerHTML = "☀️ Sunny";
-
-        flag.style.background = "#f39c12";
-
-        return;
-
-    }
-
-    // Temperature Rating
-
-    if(temp >=20 && temp<=28){
+    if (temp >= 20 && temp <= 28) {
 
         flag.innerHTML = "🟢 Excellent";
-
         flag.style.background = "#27ae60";
 
     }
 
-    else if(temp>=15){
+    else if (temp >= 15 && temp < 20) {
 
         flag.innerHTML = "🟢 Good";
-
         flag.style.background = "#16a085";
 
     }
 
-    else if(temp>=5){
+    else if (temp >= 29 && temp <= 35) {
 
-        flag.innerHTML = "🟡 Cold";
-
-        flag.style.background = "#2980b9";
+        flag.innerHTML = "🟡 Warm";
+        flag.style.background = "#f39c12";
 
     }
 
-    else{
+    else {
 
         flag.innerHTML = "🔴 Extreme";
-
         flag.style.background = "#e74c3c";
 
     }
 
 }
-// =========================
-// CHANGE BACKGROUND THEME
-// =========================
 
-function changeTheme(weather, windSpeed, icon){
+// ===========================
+// Theme Changer
+// ===========================
 
-    // Remove previous theme
-
-    body.className = "";
-
-    // Keep body id
-
-    body.id = "body";
-
-    // Night Theme
+function changeTheme(weather, windSpeed, icon) {
 
     const isNight = icon.includes("n");
 
-    if(isNight){
+    // Windy
+    if (windSpeed >= 8) {
 
-        body.classList.add("night-theme");
-
+        body.style.backgroundImage = "url('images/windy.jpg')";
         return;
 
     }
 
-    // Windy Theme
+    // Night
+    if (isNight) {
 
-    if(windSpeed >= 8){
-
-        body.classList.add("windy-theme");
-
+        body.style.backgroundImage = "url('images/night.jpg')";
         return;
 
     }
 
-    // Weather Theme
-
-    switch(weather.toLowerCase()){
+    switch (weather.toLowerCase()) {
 
         case "clear":
 
-            body.classList.add("sunny-theme");
-
+            body.style.backgroundImage =
+                "url('images/sunny.jpg')";
             break;
 
         case "clouds":
 
-            body.classList.add("cloud-theme");
-
+            body.style.backgroundImage =
+                "url('images/cloudy.jpg')";
             break;
 
-        case "rainy":
+        case "rain":
 
         case "drizzle":
 
-            body.classList.add("rain-theme");
-
+            body.style.backgroundImage =
+                "url('images/rainy.jpg')";
             break;
 
         case "thunderstorm":
 
-            body.classList.add("storm-theme");
-
+            body.style.backgroundImage =
+                "url('images/storm.jpg')";
             break;
 
         case "snow":
 
-            body.classList.add("snow-theme");
-
+            body.style.backgroundImage =
+                "url('images/snow.jpg')";
             break;
 
         case "mist":
@@ -474,134 +285,29 @@ function changeTheme(weather, windSpeed, icon){
 
         case "haze":
 
-        case "smoke":
-
-            body.classList.add("mist-theme");
-
+            body.style.backgroundImage =
+                "url('images/mist.jpg')";
             break;
 
         default:
 
-            body.classList.add("default-theme");
-
+            body.style.backgroundImage =
+                "url('images/cloudy.jpg')";
     }
 
 }
-// =========================
-// CAPITALIZE FIRST LETTER
-// =========================
+// ===========================
+// Capitalize
+// ===========================
 
-function capitalize(text){
+function capitalize(text) {
 
     return text
-
         .split(" ")
-
         .map(word =>
-
             word.charAt(0).toUpperCase() +
-
             word.slice(1)
-
         )
-
         .join(" ");
 
 }
-
-
-
-// =========================
-// FORMAT SUNRISE / SUNSET
-// =========================
-
-function formatTime(unixTime, timezone){
-
-    const date = new Date((unixTime + timezone) * 1000);
-
-    return date.toLocaleTimeString("en-US",{
-
-        hour:"2-digit",
-
-        minute:"2-digit",
-
-        hour12:true,
-
-        timeZone:"UTC"
-
-    });
-
-}
-
-
-
-// =========================
-// FORMAT TODAY'S DATE
-// =========================
-
-function formatDate(){
-
-    const options={
-
-        weekday:"long",
-
-        year:"numeric",
-
-        month:"long",
-
-        day:"numeric"
-
-    };
-
-    return new Date().toLocaleDateString("en-US",options);
-
-}
-
-
-
-// =========================
-// AUTO UPDATE DATE
-// =========================
-
-window.addEventListener("load",()=>{
-
-    const dateElement=document.getElementById("todayDate");
-
-    if(dateElement){
-
-        dateElement.innerHTML=formatDate();
-
-    }
-
-});
-
-
-
-// =========================
-// CLEAR SEARCH AFTER SEARCH
-// =========================
-
-function clearInput(){
-
-    cityInput.value="";
-
-}
-
-
-
-// =========================
-// OPTIONAL:
-// CLEAR SEARCH AFTER SUCCESS
-// =========================
-
-// Call clearInput() inside
-// getWeather() after updateCurrentWeather(data)
-//
-// Example:
-//
-// updateCurrentWeather(data);
-// clearInput();
-// getForecast(city);
-//
-// This keeps the search box empty
-// after every successful search.
